@@ -1,6 +1,6 @@
 package csmap_test
 
-//
+//nolint
 // import (
 //	"fmt"
 //	"runtime"
