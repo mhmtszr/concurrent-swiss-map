@@ -27,6 +27,11 @@ myMap.Has(10)
 ![img.png](img.png)
 
 ## Benchmark Test
+Benchmark was made on:
+- Apple M1 Max
+- 32 GB memory
+
+Benchmark test results can be obtained by running [this file](concurrent_swiss_map_benchmark_test.go) on local computers.
 
 ### GOMAXPROCS = 1
 
