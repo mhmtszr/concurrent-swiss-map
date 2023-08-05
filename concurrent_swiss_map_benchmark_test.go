@@ -11,7 +11,7 @@ package csmap_test
 //	"github.com/mhmtszr/concurrent-swiss-map"
 //)
 //
-//var table = []struct {
+// var table = []struct {
 //	total    int
 //	deletion int
 //}{
