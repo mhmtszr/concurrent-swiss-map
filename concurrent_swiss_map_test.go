@@ -2,9 +2,10 @@ package csmap_test
 
 import (
 	csmap "concurrent-swiss-map"
-	"github.com/stretchr/testify/assert"
 	"strconv"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestHas(t *testing.T) {

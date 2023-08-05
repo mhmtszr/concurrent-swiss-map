@@ -32,7 +32,6 @@ var table = []struct {
 }
 
 func BenchmarkConcurrentSwissMapGoMaxProcs1(b *testing.B) {
-
 	runtime.GOMAXPROCS(1)
 	for _, v := range table {
 		myMap := csmap.Create[int, string](

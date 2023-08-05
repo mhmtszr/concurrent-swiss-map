@@ -1,15 +1,16 @@
 package csmap
 
 import (
+	"sync"
+
 	"github.com/dolthub/maphash"
 	"github.com/dolthub/swiss"
-	"sync"
 )
 
-type csMap[K comparable, V any] struct {
-	shards  []*shard[K, V]
+type CsMap[K comparable, V any] struct {
 	options *Options
 	hasher  maphash.Hasher[K]
+	shards  []*shard[K, V]
 }
 
 type Options struct {
@@ -21,8 +22,8 @@ type shard[K comparable, V any] struct {
 	sync.RWMutex // Read Write mutex, guards access to internal map.
 }
 
-func Create[K comparable, V any](options ...func(options *Options)) *csMap[K, V] {
-	m := csMap[K, V]{
+func Create[K comparable, V any](options ...func(options *Options)) *CsMap[K, V] {
+	m := CsMap[K, V]{
 		hasher: maphash.NewHasher[K](),
 	}
 	o := &Options{shardCount: 32}
@@ -45,26 +46,26 @@ func WithShardCount(count int) func(options *Options) {
 	}
 }
 
-func (m *csMap[K, V]) getShard(key K) *shard[K, V] {
+func (m *CsMap[K, V]) getShard(key K) *shard[K, V] {
 	u := m.hasher.Hash(key)
 	return m.shards[u%m.options.shardCount]
 }
 
-func (m *csMap[K, V]) Store(key K, value V) {
+func (m *CsMap[K, V]) Store(key K, value V) {
 	shard := m.getShard(key)
 	shard.Lock()
 	defer shard.Unlock()
 	shard.items.Put(key, value)
 }
 
-func (m *csMap[K, V]) Delete(key K) bool {
+func (m *CsMap[K, V]) Delete(key K) bool {
 	shard := m.getShard(key)
 	shard.Lock()
 	defer shard.Unlock()
 	return shard.items.Delete(key)
 }
 
-func (m *csMap[K, V]) Load(key K) *V {
+func (m *CsMap[K, V]) Load(key K) *V {
 	shard := m.getShard(key)
 	shard.RLock()
 	defer shard.RUnlock()
@@ -75,7 +76,7 @@ func (m *csMap[K, V]) Load(key K) *V {
 	return &value
 }
 
-func (m *csMap[K, V]) Has(key K) bool {
+func (m *CsMap[K, V]) Has(key K) bool {
 	shard := m.getShard(key)
 	shard.RLock()
 	defer shard.RUnlock()
