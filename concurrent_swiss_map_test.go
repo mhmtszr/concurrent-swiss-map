@@ -1,9 +1,10 @@
 package csmap_test
 
 import (
-	"github.com/mhmtszr/concurrent-swiss-map"
 	"strconv"
 	"testing"
+
+	"github.com/mhmtszr/concurrent-swiss-map"
 
 	"github.com/stretchr/testify/assert"
 )

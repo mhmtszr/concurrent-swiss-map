@@ -2,11 +2,12 @@ package csmap_test
 
 import (
 	"fmt"
-	"github.com/mhmtszr/concurrent-swiss-map"
 	"runtime"
 	"strconv"
 	"sync"
 	"testing"
+
+	"github.com/mhmtszr/concurrent-swiss-map"
 )
 
 var table = []struct {
