@@ -52,3 +52,12 @@ myMap.Has(10)
 | RW Mutex Map                     |         100 - 100         |        141225         |     613      
 | RW Mutex Map                     |      300000 - 300000      |       738111396       |   2398990    
 | RW Mutex Map                     |     5000000 - 5000000     |      14398454459      |   45261604   
+
+[doc-img]: https://godoc.org/github.com/mhmtszr/concurrent-swiss-map?status.svg
+[doc]: https://godoc.org/github.com/mhmtszr/concurrent-swiss-map
+[ci-img]: https://github.com/mhmtszr/concurrent-swiss-map/actions/workflows/build-test.yml/badge.svg
+[ci]: https://github.com/mhmtszr/concurrent-swiss-map/actions/workflows/build-test.yml
+[cov-img]: https://codecov.io/gh/mhmtszr/concurrent-swiss-map/branch/master/graph/badge.svg
+[cov]: https://codecov.io/gh/mhmtszr/concurrent-swiss-map
+[go-report-img]: https://goreportcard.com/badge/github.com/mhmtszr/concurrent-swiss-map
+[go-report]: https://goreportcard.com/report/github.com/mhmtszr/concurrent-swiss-map
