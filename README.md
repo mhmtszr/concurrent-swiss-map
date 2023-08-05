@@ -14,13 +14,21 @@ go get github.com/mhmtszr/concurrent-swiss-map
 ## Usage
 New functions will be added soon...
 ```go
+
 myMap := csmap.Create[int, string](
-			csmap.WithShardCount(32),
+			csmap.WithShardCount(32) // default 32,
+			csmap.WithCustomHasher[int, string](func(key int) uint64 {
+                    return 0
+            }) // default maphash,
 		)
 myMap.Store(10, "test")
 myMap.Load(10)
 myMap.Delete(10)
 myMap.Has(10)
+myMap.IsEmpty()
+myMap.SetIfAbsent(10, "test")
+myMap.Range(func(key int, value string) (stop bool) {})
+
 ```
 
 ## Basic Architecture

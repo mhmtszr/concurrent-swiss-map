@@ -43,9 +43,84 @@ func TestDelete(t *testing.T) {
 	}
 }
 
+func TestSetIfAbsent(t *testing.T) {
+	myMap := csmap.Create[int, string]()
+	myMap.SetIfAbsent(1, "test")
+	if !myMap.Has(1) {
+		t.Fatal("1 should be exist")
+	}
+}
+
+func TestCount(t *testing.T) {
+	myMap := csmap.Create[int, string]()
+	myMap.SetIfAbsent(1, "test")
+	myMap.SetIfAbsent(2, "test2")
+	if myMap.Count() != 2 {
+		t.Fatal("count should be 2")
+	}
+}
+
+func TestIsEmpty(t *testing.T) {
+	myMap := csmap.Create[int, string]()
+	if !myMap.IsEmpty() {
+		t.Fatal("map should be empty")
+	}
+}
+
+func TestRangeStop(t *testing.T) {
+	myMap := csmap.Create[int, string](
+		csmap.WithShardCount[int, string](1),
+	)
+	myMap.SetIfAbsent(1, "test")
+	myMap.SetIfAbsent(2, "test2")
+	myMap.SetIfAbsent(3, "test2")
+	total := 0
+	myMap.Range(func(key int, value string) (stop bool) {
+		total++
+		return true
+	})
+	if total != 1 {
+		t.Fatal("total should be 1")
+	}
+}
+
+func TestRange(t *testing.T) {
+	myMap := csmap.Create[int, string]()
+	myMap.SetIfAbsent(1, "test")
+	myMap.SetIfAbsent(2, "test2")
+	total := 0
+	myMap.Range(func(key int, value string) (stop bool) {
+		total++
+		return
+	})
+	if total != 2 {
+		t.Fatal("total should be 2")
+	}
+}
+
+func TestCustomHasherWithRange(t *testing.T) {
+	myMap := csmap.Create[int, string](
+		csmap.WithCustomHasher[int, string](func(key int) uint64 {
+			return 0
+		}),
+	)
+	myMap.SetIfAbsent(1, "test")
+	myMap.SetIfAbsent(2, "test2")
+	myMap.SetIfAbsent(3, "test2")
+	myMap.SetIfAbsent(4, "test2")
+	total := 0
+	myMap.Range(func(key int, value string) (stop bool) {
+		total++
+		return true
+	})
+	if total != 1 {
+		t.Fatal("total should be 1, because currently range stops current shard only.")
+	}
+}
+
 func TestBasicConcurrentWriteDeleteCount(t *testing.T) {
 	myMap := csmap.Create[int, string](
-		csmap.WithShardCount(5),
+		csmap.WithShardCount[int, string](5),
 	)
 
 	var wg sync.WaitGroup
