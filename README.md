@@ -15,13 +15,16 @@ go get github.com/mhmtszr/concurrent-swiss-map
 New functions will be added soon...
 ```go
 myMap := csmap.Create[int, string](
-			csmap.WithShardCount(10),
+			csmap.WithShardCount(32),
 		)
 myMap.Store(10, "test")
 myMap.Load(10)
 myMap.Delete(10)
 myMap.Has(10)
 ```
+
+## Basic Architecture
+![img.png](img.png)
 
 ## Benchmark Test
 
