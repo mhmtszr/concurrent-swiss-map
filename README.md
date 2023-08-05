@@ -8,7 +8,7 @@ Uses [dolthub/swiss](https://github.com/dolthub/swiss) map implementation under 
 
 Supports 1.18+ Go versions because of Go Generics
 ```
-go get github.com/mhmtszr/csmap
+go get github.com/mhmtszr/concurrent-swiss-map
 ```
 
 ## Usage
