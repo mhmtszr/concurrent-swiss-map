@@ -34,14 +34,6 @@ var table = []struct {
 func BenchmarkConcurrentSwissMapGoMaxProcs1(b *testing.B) {
 	runtime.GOMAXPROCS(1)
 	for _, v := range table {
-		myMap := csmap.Create[int, string](
-			csmap.WithShardCount(10),
-		)
-		myMap.Store(10, "test")
-		myMap.Load(10)
-		myMap.Delete(10)
-		myMap.Has(10)
-
 		b.Run(fmt.Sprintf("total: %d deletion: %d", v.total, v.deletion), func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				m1 := csmap.Create[int, string]()
