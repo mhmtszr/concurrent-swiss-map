@@ -18,8 +18,8 @@ type Options struct {
 }
 
 type shard[K comparable, V any] struct {
-	items        *swiss.Map[K, V]
-	sync.RWMutex // Read Write mutex, guards access to internal map.
+	items *swiss.Map[K, V]
+	sync.RWMutex
 }
 
 func Create[K comparable, V any](options ...func(options *Options)) *CsMap[K, V] {
@@ -80,6 +80,5 @@ func (m *CsMap[K, V]) Has(key K) bool {
 	shard := m.getShard(key)
 	shard.RLock()
 	defer shard.RUnlock()
-	_, ok := shard.items.Get(key)
-	return ok
+	return shard.items.Has(key)
 }
