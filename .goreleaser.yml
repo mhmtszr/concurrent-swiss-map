@@ -1,8 +1,8 @@
-project_name: csgo
+project_name: concurrent-swiss-map
 
 release:
   github:
-    name: csgo
+    name: concurrent-swiss-map
     owner: mhmtszr
 
 before:
