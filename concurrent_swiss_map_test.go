@@ -1,7 +1,7 @@
 package csmap_test
 
 import (
-	csmap "concurrent-swiss-map"
+	"github.com/mhmtszr/concurrent-swiss-map"
 	"strconv"
 	"testing"
 
