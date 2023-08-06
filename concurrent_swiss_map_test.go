@@ -19,10 +19,12 @@ func TestHas(t *testing.T) {
 func TestLoad(t *testing.T) {
 	myMap := csmap.Create[int, string]()
 	myMap.Store(1, "test")
-	if *myMap.Load(1) != "test" {
+	v, ok := myMap.Load(1)
+	v2, ok2 := myMap.Load(2)
+	if v != "test" || !ok {
 		t.Fatal("1 should test")
 	}
-	if myMap.Load(2) != nil {
+	if v2 != "" || ok2 {
 		t.Fatal("2 should not exist")
 	}
 }

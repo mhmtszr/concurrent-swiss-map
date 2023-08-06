@@ -74,15 +74,11 @@ func (m *CsMap[K, V]) Delete(key K) bool {
 	return shard.items.Delete(key)
 }
 
-func (m *CsMap[K, V]) Load(key K) *V {
+func (m *CsMap[K, V]) Load(key K) (V, bool) {
 	shard := m.getShard(key)
 	shard.RLock()
 	defer shard.RUnlock()
-	value, ok := shard.items.Get(key)
-	if !ok {
-		return nil
-	}
-	return &value
+	return shard.items.Get(key)
 }
 
 func (m *CsMap[K, V]) Has(key K) bool {
