@@ -16,11 +16,12 @@ New functions will be added soon...
 ```go
 
 myMap := csmap.Create[int, string](
-			csmap.WithShardCount(32) // default 32,
-			csmap.WithCustomHasher[int, string](func(key int) uint64 {
-                    return 0
-            }) // default maphash,
-		)
+    csmap.WithShardCount[int, string](32), // default 32,
+    csmap.WithCustomHasher[int, string](func(key int) uint64 {
+        return 0
+    }), // default maphash,
+    csmap.WithSize[int, string](1000), // default 0
+)
 myMap.Store(10, "test")
 myMap.Load(10)
 myMap.Delete(10)
@@ -28,6 +29,7 @@ myMap.Has(10)
 myMap.IsEmpty()
 myMap.SetIfAbsent(10, "test")
 myMap.Range(func(key int, value string) (stop bool) {})
+myMap.Count()
 
 ```
 

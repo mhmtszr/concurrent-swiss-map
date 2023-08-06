@@ -120,7 +120,8 @@ func TestCustomHasherWithRange(t *testing.T) {
 
 func TestBasicConcurrentWriteDeleteCount(t *testing.T) {
 	myMap := csmap.Create[int, string](
-		csmap.WithShardCount[int, string](5),
+		csmap.WithShardCount[int, string](32),
+		csmap.WithSize[int, string](1000),
 	)
 
 	var wg sync.WaitGroup

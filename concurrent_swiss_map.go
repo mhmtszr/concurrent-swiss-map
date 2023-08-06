@@ -10,6 +10,7 @@ type CsMap[K comparable, V any] struct {
 	hasher     func(key K) uint64
 	shards     []*shard[K, V]
 	shardCount uint64
+	size       uint64
 }
 
 type shard[K comparable, V any] struct {
@@ -31,7 +32,7 @@ func Create[K comparable, V any](options ...func(options *CsMap[K, V])) *CsMap[K
 	m.shards = make([]*shard[K, V], m.shardCount)
 
 	for i := 0; i < int(m.shardCount); i++ {
-		m.shards[i] = &shard[K, V]{items: swiss.NewMap[K, V](0)}
+		m.shards[i] = &shard[K, V]{items: swiss.NewMap[K, V](uint32((m.size / m.shardCount) + 1))}
 	}
 	return &m
 }
@@ -45,6 +46,12 @@ func WithShardCount[K comparable, V any](count uint64) func(csMap *CsMap[K, V]) 
 func WithCustomHasher[K comparable, V any](h func(key K) uint64) func(csMap *CsMap[K, V]) {
 	return func(csMap *CsMap[K, V]) {
 		csMap.hasher = h
+	}
+}
+
+func WithSize[K comparable, V any](size uint64) func(csMap *CsMap[K, V]) {
+	return func(csMap *CsMap[K, V]) {
+		csMap.size = size
 	}
 }
 
