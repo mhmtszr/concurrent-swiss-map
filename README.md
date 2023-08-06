@@ -43,33 +43,7 @@ Benchmark was made on:
 
 Benchmark test results can be obtained by running [this file](concurrent_swiss_map_benchmark_test.go) on local computers.
 
-### GOMAXPROCS = 1
-
-| Map                              | Test Case(Write - Delete) | Execution Time(ns/op) | Allocations  |
-|:---------------------------------|:-------------------------:|:---------------------:|:------------:|
-| ⚡ Concurrent Swiss Map(32 Shard) |         100 - 100         |      **117334**       |   **733**    
-| ⚡ Concurrent Swiss Map(32 Shard) |      300000 - 300000      |     **341128639**     | **2423555**  
-| ⚡ Concurrent Swiss Map(32 Shard) |     5000000 - 5000000     |    **6420842000**     | **45035342** 
-| Sync Map                         |         100 - 100         |        143586         |     1491     
-| Sync Map                         |      300000 - 300000      |      2014041667       |   16468880   
-| Sync Map                         |     5000000 - 5000000     |      18961874125      |   96790843   
-| RW Mutex Map                     |         100 - 100         |        138229         |     613      
-| RW Mutex Map                     |      300000 - 300000      |       559620229       |   2101873    
-| RW Mutex Map                     |     5000000 - 5000000     |      14591007000      |   45475146   
-
-### GOMAXPROCS = Core Count
-
-| Map                              | Test Case(Write - Delete) | Execution Time(ns/op) | Allocations  |
-|:---------------------------------|:-------------------------:|:---------------------:|:------------:|
-| ⚡ Concurrent Swiss Map(32 Shard) |         100 - 100         |      **112274**       |   **733**    
-| ⚡ Concurrent Swiss Map(32 Shard) |      300000 - 300000      |     **341237361**     | **2412835**  
-| ⚡ Concurrent Swiss Map(32 Shard) |     5000000 - 5000000     |    **6586543375**     | **45002469** 
-| Sync Map                         |         100 - 100         |        140694         |     1489     
-| Sync Map                         |      300000 - 300000      |       676816958       |   5108574    
-| Sync Map                         |     5000000 - 5000000     |      18196143500      |   93150564   
-| RW Mutex Map                     |         100 - 100         |        141225         |     613      
-| RW Mutex Map                     |      300000 - 300000      |       738111396       |   2398990    
-| RW Mutex Map                     |     5000000 - 5000000     |      14398454459      |   45261604   
+![benchmark.png](benchmark.png)
 
 [doc-img]: https://godoc.org/github.com/mhmtszr/concurrent-swiss-map?status.svg
 [doc]: https://godoc.org/github.com/mhmtszr/concurrent-swiss-map
