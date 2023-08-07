@@ -1,6 +1,6 @@
+//nolint
 package csmap_test
 
-//nolint
 // import (
 //	"fmt"
 //	"runtime"
@@ -516,13 +516,13 @@ package csmap_test
 //	m.m[key] = value
 //}
 //
-//func (m *TestRWMutexMap) Delete(key int) {
+// func (m *TestRWMutexMap) Delete(key int) {
 //	m.Lock()
 //	defer m.Unlock()
 //	delete(m.m, key)
 //}
 //
-//func (m *TestRWMutexMap) Load(key int) *string {
+// func (m *TestRWMutexMap) Load(key int) *string {
 //	m.RLock()
 //	defer m.RUnlock()
 //	s, ok := m.m[key]
