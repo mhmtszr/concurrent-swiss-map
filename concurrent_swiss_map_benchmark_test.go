@@ -509,7 +509,7 @@ package csmap_test
 //	}
 //}
 //
-//func (m *TestRWMutexMap) Store(key int, value string) {
+// func (m *TestRWMutexMap) Store(key int, value string) {
 //	m.Lock()
 //	defer m.Unlock()
 //	m.m[key] = value
