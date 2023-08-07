@@ -47,8 +47,8 @@ Benchmark test results can be obtained by running [this file](concurrent_swiss_m
 
 ### Benchmark Results
 
-- Memory usage of concurrent swiss map is better than other map implementations in all checked test scenarios.
-- In high concurrent systems, concurrent swiss map is faster, but in systems contains few concurrent operations it works similar to RWMutexMap.
+- Memory usage of the concurrent swiss map is better than other map implementations in all checked test scenarios.
+- In high concurrent systems, the concurrent swiss map is faster, but in systems containing few concurrent operations, it works similarly to RWMutexMap.
 
 [doc-img]: https://godoc.org/github.com/mhmtszr/concurrent-swiss-map?status.svg
 [doc]: https://godoc.org/github.com/mhmtszr/concurrent-swiss-map
