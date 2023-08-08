@@ -13,6 +13,8 @@
 // limitations under the License.
 //go:build !amd64 || nosimd
 
+//nolint:all
+
 package swiss
 
 import (

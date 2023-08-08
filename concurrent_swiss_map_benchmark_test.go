@@ -1,4 +1,4 @@
-//nolint
+//nolint:all
 package csmap_test
 
 // import (
