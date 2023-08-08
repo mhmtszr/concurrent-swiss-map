@@ -5,7 +5,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/mhmtszr/concurrent-swiss-map"
+	csmap "github.com/mhmtszr/concurrent-swiss-map"
 )
 
 func TestHas(t *testing.T) {
