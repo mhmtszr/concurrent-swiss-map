@@ -1,6 +1,7 @@
 run:
   skip-dirs:
     - swiss
+    - swiss/simd
     - maphash
   skip-files:
     - "concurrent_swiss_map_benchmark_test.go"
