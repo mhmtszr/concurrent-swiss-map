@@ -17,6 +17,7 @@
 package swiss
 
 import (
+	"github.com/mhmtszr/concurrent-swiss-map/simd"
 	"math/bits"
 )
 
