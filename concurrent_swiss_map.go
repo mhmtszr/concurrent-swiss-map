@@ -1,9 +1,8 @@
 package csmap
 
 import (
+	"github.com/mhmtszr/concurrent-swiss-map/swiss"
 	"sync"
-
-	"github.com/dolthub/swiss"
 )
 
 type CsMap[K comparable, V any] struct {

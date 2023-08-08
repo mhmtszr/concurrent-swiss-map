@@ -1,6 +1,6 @@
 package csmap
 
-import "github.com/dolthub/maphash"
+import "github.com/mhmtszr/concurrent-swiss-map/maphash"
 
 type DefaultHasher[K comparable] struct {
 	h maphash.Hasher[K]
