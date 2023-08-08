@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//nolint
 package swiss
 
 import (
-	"github.com/mhmtszr/concurrent-swiss-map/maphash"
 	"math/rand"
+
+	"github.com/mhmtszr/concurrent-swiss-map/maphash"
 )
 
 const (
@@ -94,7 +94,7 @@ func (m *Map[K, V]) Has(key K) (ok bool) {
 			ok = false
 			return
 		}
-		g += 1 // linear probing
+		g++ // linear probing
 		if g >= uint32(len(m.groups)) {
 			g = 0
 		}
@@ -120,7 +120,7 @@ func (m *Map[K, V]) HasWithHash(key K, hash uint64) (ok bool) {
 			ok = false
 			return
 		}
-		g += 1 // linear probing
+		g++ // linear probing
 		if g >= uint32(len(m.groups)) {
 			g = 0
 		}
@@ -147,7 +147,7 @@ func (m *Map[K, V]) Get(key K) (value V, ok bool) {
 			ok = false
 			return
 		}
-		g += 1 // linear probing
+		g++ // linear probing
 		if g >= uint32(len(m.groups)) {
 			g = 0
 		}
@@ -173,7 +173,7 @@ func (m *Map[K, V]) GetWithHash(key K, hash uint64) (value V, ok bool) {
 			ok = false
 			return
 		}
-		g += 1 // linear probing
+		g++ // linear probing
 		if g >= uint32(len(m.groups)) {
 			g = 0
 		}
@@ -208,7 +208,7 @@ func (m *Map[K, V]) Put(key K, value V) {
 			m.resident++
 			return
 		}
-		g += 1 // linear probing
+		g++ // linear probing
 		if g >= uint32(len(m.groups)) {
 			g = 0
 		}
@@ -243,7 +243,7 @@ func (m *Map[K, V]) PutWithHash(key K, value V, hash uint64) {
 			m.resident++
 			return
 		}
-		g += 1 // linear probing
+		g++ // linear probing
 		if g >= uint32(len(m.groups)) {
 			g = 0
 		}
@@ -284,7 +284,7 @@ func (m *Map[K, V]) Delete(key K) (ok bool) {
 			ok = false
 			return
 		}
-		g += 1 // linear probing
+		g++ // linear probing
 		if g >= uint32(len(m.groups)) {
 			g = 0
 		}
@@ -324,7 +324,7 @@ func (m *Map[K, V]) DeleteWithHash(key K, hash uint64) (ok bool) {
 			ok = false
 			return
 		}
-		g += 1 // linear probing
+		g++ // linear probing
 		if g >= uint32(len(m.groups)) {
 			g = 0
 		}
@@ -336,6 +336,8 @@ func (m *Map[K, V]) DeleteWithHash(key K, hash uint64) (ok bool) {
 // for un-mutated Maps, every key will be visited once. If the Map is
 // Mutated during iteration, mutations will be reflected on return from
 // Iter, but the set of keys visited by Iter is non-deterministic.
+//
+//nolint:gosec
 func (m *Map[K, V]) Iter(cb func(k K, v V) (stop bool)) bool {
 	// take a consistent view of the table in case
 	// we rehash during iteration
@@ -384,7 +386,7 @@ func (m *Map[K, V]) find(key K, hi h1, lo h2) (g, s uint32, ok bool) {
 			s = nextMatch(&matches)
 			return g, s, false
 		}
-		g += 1 // linear probing
+		g++ // linear probing
 		if g >= uint32(len(m.groups)) {
 			g = 0
 		}
