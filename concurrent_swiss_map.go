@@ -55,37 +55,44 @@ func WithSize[K comparable, V any](size uint64) func(csMap *CsMap[K, V]) {
 	}
 }
 
-func (m *CsMap[K, V]) getShard(key K) *shard[K, V] {
+func (m *CsMap[K, V]) getShard(key K) *HashShardPair[K, V] {
 	u := m.hasher(key)
-	return m.shards[u%m.shardCount]
+	return &HashShardPair[K, V]{
+		hash:  u,
+		shard: m.shards[u%m.shardCount],
+	}
 }
 
 func (m *CsMap[K, V]) Store(key K, value V) {
-	shard := m.getShard(key)
+	hashShardPair := m.getShard(key)
+	shard := hashShardPair.shard
 	shard.Lock()
 	defer shard.Unlock()
-	shard.items.Put(key, value)
+	shard.items.PutWithHash(key, value, hashShardPair.hash)
 }
 
 func (m *CsMap[K, V]) Delete(key K) bool {
-	shard := m.getShard(key)
+	hashShardPair := m.getShard(key)
+	shard := hashShardPair.shard
 	shard.Lock()
 	defer shard.Unlock()
-	return shard.items.Delete(key)
+	return shard.items.DeleteWithHash(key, hashShardPair.hash)
 }
 
 func (m *CsMap[K, V]) Load(key K) (V, bool) {
-	shard := m.getShard(key)
+	hashShardPair := m.getShard(key)
+	shard := hashShardPair.shard
 	shard.RLock()
 	defer shard.RUnlock()
-	return shard.items.Get(key)
+	return shard.items.GetWithHash(key, hashShardPair.hash)
 }
 
 func (m *CsMap[K, V]) Has(key K) bool {
-	shard := m.getShard(key)
+	hashShardPair := m.getShard(key)
+	shard := hashShardPair.shard
 	shard.RLock()
 	defer shard.RUnlock()
-	return shard.items.Has(key)
+	return shard.items.HasWithHash(key, hashShardPair.hash)
 }
 
 func (m *CsMap[K, V]) Count() int {
@@ -100,12 +107,13 @@ func (m *CsMap[K, V]) Count() int {
 }
 
 func (m *CsMap[K, V]) SetIfAbsent(key K, value V) {
-	shard := m.getShard(key)
+	hashShardPair := m.getShard(key)
+	shard := hashShardPair.shard
 	shard.Lock()
 	defer shard.Unlock()
-	_, ok := shard.items.Get(key)
+	_, ok := shard.items.GetWithHash(key, hashShardPair.hash)
 	if !ok {
-		shard.items.Put(key, value)
+		shard.items.PutWithHash(key, value, hashShardPair.hash)
 	}
 }
 
@@ -114,12 +122,19 @@ func (m *CsMap[K, V]) IsEmpty() bool {
 }
 
 // Range If the callback function returns true iteration will stop.
-// TODO: currently it only stops the current shard
 func (m *CsMap[K, V]) Range(f func(key K, value V) (stop bool)) {
 	for i := 0; i < len(m.shards); i++ {
 		shard := m.shards[i]
 		shard.RLock()
-		shard.items.Iter(f)
+		stop := shard.items.Iter(f)
+		if stop {
+			return
+		}
 		shard.RUnlock()
 	}
+}
+
+type HashShardPair[K comparable, V any] struct {
+	shard *shard[K, V]
+	hash  uint64
 }

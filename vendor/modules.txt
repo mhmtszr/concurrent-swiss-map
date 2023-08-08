@@ -1,0 +1,7 @@
+# github.com/dolthub/maphash v0.1.0
+## explicit; go 1.18
+github.com/dolthub/maphash
+# github.com/dolthub/swiss v0.1.0
+## explicit; go 1.18
+github.com/dolthub/swiss
+github.com/dolthub/swiss/simd
