@@ -24,9 +24,9 @@ linters:
     - misspell
     - nakedret
     - gofumpt
-    - nolintlint
     - staticcheck
     - stylecheck
+    - typecheck
     - unconvert
     - unparam
     - whitespace
