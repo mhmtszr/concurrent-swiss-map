@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//nolint
 package swiss
 
 import (
@@ -26,9 +27,9 @@ const (
 // Map is an open-addressing hash map
 // based on Abseil's flat_hash_map.
 type Map[K comparable, V any] struct {
-	hash     maphash.Hasher[K]
 	ctrl     []metadata
 	groups   []group[K, V]
+	hash     maphash.Hasher[K]
 	resident uint32
 	dead     uint32
 	limit    uint32

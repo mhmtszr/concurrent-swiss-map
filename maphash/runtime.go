@@ -22,6 +22,7 @@
 //go:build go1.18 || go1.19
 // +build go1.18 go1.19
 
+// nolint
 package maphash
 
 import (
@@ -64,28 +65,32 @@ type mapiface struct {
 
 // go/src/runtime/type.go
 type maptype struct {
-	key        *_type
-	elem       *_type
-	bucket     *_type
+	typ    _type
+	key    *_type
+	elem   *_type
+	bucket *_type
+	// function for hashing keys (ptr to key, seed) -> hash
 	hasher     func(unsafe.Pointer, uintptr) uintptr
-	typ        _type
-	flags      uint32
-	bucketsize uint16
 	keysize    uint8
 	elemsize   uint8
+	bucketsize uint16
+	flags      uint32
 }
 
 // go/src/runtime/map.go
 type hmap struct {
+	count     int
+	flags     uint8
+	B         uint8
+	noverflow uint16
+	// hash seed
+	hash0      uint32
 	buckets    unsafe.Pointer
 	oldbuckets unsafe.Pointer
-	extra      unsafe.Pointer
-	count      int
 	nevacuate  uintptr
-	hash0      uint32
-	noverflow  uint16
-	flags      uint8
-	B          uint8
+	// true type is *mapextra
+	// but we don't need this data
+	extra unsafe.Pointer
 }
 
 // go/src/runtime/type.go
@@ -95,15 +100,15 @@ type typeOff int32
 
 // go/src/runtime/type.go
 type _type struct {
-	equal      func(unsafe.Pointer, unsafe.Pointer) bool
-	gcdata     *byte
 	size       uintptr
 	ptrdata    uintptr
 	hash       uint32
-	str        nameOff
-	ptrToThis  typeOff
 	tflag      tflag
 	align      uint8
 	fieldAlign uint8
 	kind       uint8
+	equal      func(unsafe.Pointer, unsafe.Pointer) bool
+	gcdata     *byte
+	str        nameOff
+	ptrToThis  typeOff
 }
