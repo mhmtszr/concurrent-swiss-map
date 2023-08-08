@@ -27,7 +27,6 @@ linters:
     - nolintlint
     - staticcheck
     - stylecheck
-    - typecheck
     - unconvert
     - unparam
     - whitespace
