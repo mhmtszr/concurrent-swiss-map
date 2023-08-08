@@ -27,16 +27,19 @@ const (
 
 type bitset uint16
 
+//nolint:all
 func metaMatchH2(m *metadata, h h2) bitset {
 	b := simd.MatchMetadata((*[16]int8)(m), int8(h))
 	return bitset(b)
 }
 
+//nolint:all
 func metaMatchEmpty(m *metadata) bitset {
 	b := simd.MatchMetadata((*[16]int8)(m), empty)
 	return bitset(b)
 }
 
+//nolint:all
 func nextMatch(b *bitset) (s uint32) {
 	s = uint32(bits.TrailingZeros16(uint16(*b)))
 	*b &= ^(1 << s) // clear bit |s|
