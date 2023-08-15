@@ -128,6 +128,7 @@ func (m *CsMap[K, V]) Range(f func(key K, value V) (stop bool)) {
 		shard.RLock()
 		stop := shard.items.Iter(f)
 		if stop {
+			shard.RUnlock()
 			return
 		}
 		shard.RUnlock()
