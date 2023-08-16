@@ -7,30 +7,73 @@ Uses [dolthub/swiss](https://github.com/dolthub/swiss) map implementation under 
 ## Installation
 
 Supports 1.18+ Go versions because of Go Generics
+
 ```
 go get github.com/mhmtszr/concurrent-swiss-map
 ```
 
 ## Usage
+
 New functions will be added soon...
+
 ```go
+package main
 
-myMap := csmap.Create[int, string](
-    csmap.WithShardCount[int, string](32), // default 32,
-    csmap.WithCustomHasher[int, string](func(key int) uint64 {
-        return 0
-    }), // default maphash,
-    csmap.WithSize[int, string](1000), // default 0
+import (
+	"hash/fnv"
+
+	csmap "github.com/mhmtszr/concurrent-swiss-map"
 )
-myMap.Store(10, "test")
-myMap.Load(10)
-myMap.Delete(10)
-myMap.Has(10)
-myMap.IsEmpty()
-myMap.SetIfAbsent(10, "test")
-myMap.Range(func(key int, value string) (stop bool) {})
-myMap.Count()
 
+func main() {
+	myMap := csmap.Create[string, int](
+		// set the number of map shards. the default value is 32.
+		csmap.WithShardCount[string, int](32),
+
+		// if don't set custom hasher, use the built-in maphash.
+		csmap.WithCustomHasher[string, int](func(key string) uint64 {
+			hash := fnv.New64a()
+			hash.Write([]byte(key))
+			return hash.Sum64()
+		}),
+
+		// set the total capacity, every shard map has total capacity/shard count capacity. the default value is 0.
+		csmap.WithSize[string, int](1000),
+	)
+
+	key := "swiss-map"
+	myMap.Store(key, 10)
+
+	val, ok := myMap.Load(key)
+	println("load val:", val, "exists:", ok)
+
+	deleted := myMap.Delete(key)
+	println("deleted:", deleted)
+
+	ok = myMap.Has(key)
+	println("has:", ok)
+
+	empty := myMap.IsEmpty()
+	println("empty:", empty)
+
+	myMap.SetIfAbsent(key, 11)
+
+	myMap.Range(func(key string, value int) (stop bool) {
+		println("range:", key, value)
+		return true
+	})
+
+	count := myMap.Count()
+	println("count:", count)
+
+	// Output:
+	// load val: 10 exists: true
+	// deleted: true
+	// has: false
+	// empty: true
+	// range: swiss-map 11
+	// count: 1
+}
 ```
 
 ## Basic Architecture
