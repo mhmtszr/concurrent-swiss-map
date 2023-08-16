@@ -117,6 +117,17 @@ func (m *CsMap[K, V]) SetIfAbsent(key K, value V) {
 	}
 }
 
+func (m *CsMap[K, V]) SetIfPresent(key K, value V) {
+	hashShardPair := m.getShard(key)
+	shard := hashShardPair.shard
+	shard.Lock()
+	defer shard.Unlock()
+	_, ok := shard.items.GetWithHash(key, hashShardPair.hash)
+	if ok {
+		shard.items.PutWithHash(key, value, hashShardPair.hash)
+	}
+}
+
 func (m *CsMap[K, V]) IsEmpty() bool {
 	return m.Count() == 0
 }

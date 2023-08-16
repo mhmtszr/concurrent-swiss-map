@@ -53,6 +53,21 @@ func TestSetIfAbsent(t *testing.T) {
 	}
 }
 
+func TestSetIfPresent(t *testing.T) {
+	myMap := csmap.Create[int, string]()
+	myMap.SetIfPresent(1, "test")
+	if myMap.Has(1) {
+		t.Fatal("1 should be not exist")
+	}
+
+	myMap.Store(1, "test")
+	myMap.SetIfPresent(1, "new-test")
+	val, _ := myMap.Load(1)
+	if val != "new-test" {
+		t.Fatal("val should be new-test")
+	}
+}
+
 func TestCount(t *testing.T) {
 	myMap := csmap.Create[int, string]()
 	myMap.SetIfAbsent(1, "test")
