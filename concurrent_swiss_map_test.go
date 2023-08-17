@@ -175,3 +175,30 @@ func TestBasicConcurrentWriteDeleteCount(t *testing.T) {
 
 	wg.Wait()
 }
+
+func TestClear(t *testing.T) {
+	myMap := csmap.Create[int, string]()
+	loop := 10000
+	for i := 0; i < loop; i++ {
+		myMap.Store(i, "test")
+	}
+
+	myMap.Clear()
+
+	if !myMap.IsEmpty() {
+		t.Fatal("count should be true")
+	}
+
+	// store again
+	for i := 0; i < loop; i++ {
+		myMap.Store(i, "test")
+	}
+
+	// check again
+	count := myMap.Count()
+	if count != loop {
+		t.Fatal("count should be 1000")
+	}
+
+	myMap.Clear()
+}

@@ -331,6 +331,16 @@ func (m *Map[K, V]) DeleteWithHash(key K, hash uint64) (ok bool) {
 	}
 }
 
+// Clear removes all elements from the Map.
+func (m *Map[K, V]) Clear() {
+	for i, c := range m.ctrl {
+		for j := range c {
+			m.ctrl[i][j] = empty
+		}
+	}
+	m.resident, m.dead = 0, 0
+}
+
 // Iter iterates the elements of the Map, passing them to the callback.
 // It guarantees that any key in the Map will be visited only once, and
 // for un-mutated Maps, every key will be visited once. If the Map is
