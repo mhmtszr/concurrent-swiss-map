@@ -99,9 +99,9 @@ func (m *CsMap[K, V]) Clear() {
 	for i := 0; i < len(m.shards); i++ {
 		shard := m.shards[i]
 
-		shard.RLock()
+		shard.Lock()
 		shard.items.Clear()
-		shard.RUnlock()
+		shard.Unlock()
 	}
 }
 
