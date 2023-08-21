@@ -194,11 +194,21 @@ func TestClear(t *testing.T) {
 		myMap.Store(i, "test")
 	}
 
+	// get again
+	for i := 0; i < loop; i++ {
+		val, ok := myMap.Load(i)
+		if ok != true {
+			t.Fatal("ok should be true")
+		}
+
+		if val != "test" {
+			t.Fatal("val should be test")
+		}
+	}
+
 	// check again
 	count := myMap.Count()
 	if count != loop {
 		t.Fatal("count should be 1000")
 	}
-
-	myMap.Clear()
 }
