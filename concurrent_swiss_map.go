@@ -95,6 +95,16 @@ func (m *CsMap[K, V]) Has(key K) bool {
 	return shard.items.HasWithHash(key, hashShardPair.hash)
 }
 
+func (m *CsMap[K, V]) Clear() {
+	for i := 0; i < len(m.shards); i++ {
+		shard := m.shards[i]
+
+		shard.Lock()
+		shard.items.Clear()
+		shard.Unlock()
+	}
+}
+
 func (m *CsMap[K, V]) Count() int {
 	count := 0
 	for i := 0; i < len(m.shards); i++ {

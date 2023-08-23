@@ -33,6 +33,7 @@ type Map[K comparable, V any] struct {
 	resident uint32
 	dead     uint32
 	limit    uint32
+	sz       uint32
 }
 
 // metadata is the h2 metadata array for a group.
@@ -67,6 +68,7 @@ func NewMap[K comparable, V any](sz uint32) (m *Map[K, V]) {
 		groups: make([]group[K, V], groups),
 		hash:   maphash.NewHasher[K](),
 		limit:  groups * maxAvgGroupLoad,
+		sz:     groups,
 	}
 	for i := range m.ctrl {
 		m.ctrl[i] = newEmptyMetadata()
@@ -329,6 +331,18 @@ func (m *Map[K, V]) DeleteWithHash(key K, hash uint64) (ok bool) {
 			g = 0
 		}
 	}
+}
+
+// Clear removes all elements from the Map.
+func (m *Map[K, V]) Clear() {
+	m.ctrl = make([]metadata, m.sz)
+	m.groups = make([]group[K, V], m.sz)
+	m.limit = m.sz * maxAvgGroupLoad
+
+	for i := range m.ctrl {
+		m.ctrl[i] = newEmptyMetadata()
+	}
+	m.resident, m.dead = 0, 0
 }
 
 // Iter iterates the elements of the Map, passing them to the callback.
