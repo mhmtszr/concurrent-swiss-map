@@ -127,6 +127,21 @@ func (m *CsMap[K, V]) SetIfAbsent(key K, value V) {
 	}
 }
 
+// LoadAndSetIfAbsent returns true and the se value if the key was present,
+// otherwise false and the new value it was set to.
+func (m *CsMap[K, V]) LoadAndSetIfAbsent(key K, value V) (V, bool) {
+	hashShardPair := m.getShard(key)
+	shard := hashShardPair.shard
+	shard.Lock()
+	defer shard.Unlock()
+	existingValue, found := shard.items.GetWithHash(key, hashShardPair.hash)
+	if found {
+		return existingValue, true
+	}
+	shard.items.PutWithHash(key, value, hashShardPair.hash)
+	return value, false
+}
+
 func (m *CsMap[K, V]) SetIfPresent(key K, value V) {
 	hashShardPair := m.getShard(key)
 	shard := hashShardPair.shard
@@ -136,6 +151,19 @@ func (m *CsMap[K, V]) SetIfPresent(key K, value V) {
 	if ok {
 		shard.items.PutWithHash(key, value, hashShardPair.hash)
 	}
+}
+
+// LoadAndSetIfPresent returns true if the key was present and the value was set.
+func (m *CsMap[K, V]) LoadAndSetIfPresent(key K, value V) bool {
+	hashShardPair := m.getShard(key)
+	shard := hashShardPair.shard
+	shard.Lock()
+	defer shard.Unlock()
+	_, ok := shard.items.GetWithHash(key, hashShardPair.hash)
+	if ok {
+		shard.items.PutWithHash(key, value, hashShardPair.hash)
+	}
+	return ok
 }
 
 func (m *CsMap[K, V]) IsEmpty() bool {

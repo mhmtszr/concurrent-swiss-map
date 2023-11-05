@@ -53,6 +53,28 @@ func TestSetIfAbsent(t *testing.T) {
 	}
 }
 
+func TestLoadAndSetIfAbsent(t *testing.T) {
+	myMap := csmap.Create[int, string]()
+	value, found := myMap.LoadAndSetIfAbsent(1, "test")
+	if found {
+		t.Fatal("value should not be found")
+	}
+	if value != "test" {
+		t.Fatal("value should test")
+	}
+	if !myMap.Has(1) {
+		t.Fatal("1 should be exist")
+	}
+
+	value, found = myMap.LoadAndSetIfAbsent(1, "bad")
+	if !found {
+		t.Fatal("value should be found")
+	}
+	if value != "test" {
+		t.Fatal("value should test")
+	}
+}
+
 func TestSetIfPresent(t *testing.T) {
 	myMap := csmap.Create[int, string]()
 	myMap.SetIfPresent(1, "test")
@@ -62,6 +84,27 @@ func TestSetIfPresent(t *testing.T) {
 
 	myMap.Store(1, "test")
 	myMap.SetIfPresent(1, "new-test")
+	val, _ := myMap.Load(1)
+	if val != "new-test" {
+		t.Fatal("val should be new-test")
+	}
+}
+
+func TestLoadAndSetIfPresent(t *testing.T) {
+	myMap := csmap.Create[int, string]()
+	found := myMap.LoadAndSetIfPresent(1, "test")
+	if found {
+		t.Fatal("value should not be found")
+	}
+	if myMap.Has(1) {
+		t.Fatal("1 should be not exist")
+	}
+
+	myMap.Store(1, "test")
+	found = myMap.LoadAndSetIfPresent(1, "new-test")
+	if !found {
+		t.Fatal("value should be found")
+	}
 	val, _ := myMap.Load(1)
 	if val != "new-test" {
 		t.Fatal("val should be new-test")
