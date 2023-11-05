@@ -68,6 +68,66 @@ func TestSetIfPresent(t *testing.T) {
 	}
 }
 
+func TestSetIf(t *testing.T) {
+	myMap := csmap.Create[int, string]()
+	valueA := "value a"
+	myMap.SetIf(1, func(previousVale string, previousFound bool) (value string, set bool) {
+		// operate like  a SetIfAbsent...
+		if !previousFound {
+			return valueA, true
+		}
+		return "", false
+	})
+	value, _ := myMap.Load(1)
+	if value != valueA {
+		t.Fatal("value should value a")
+	}
+
+	myMap.SetIf(1, func(previousVale string, previousFound bool) (value string, set bool) {
+		// operate like  a SetIfAbsent...
+		if !previousFound {
+			return "bad", true
+		}
+		return "", false
+	})
+	value, _ = myMap.Load(1)
+	if value != valueA {
+		t.Fatal("value should value a")
+	}
+}
+
+func TestDeleteIf(t *testing.T) {
+	myMap := csmap.Create[int, string]()
+	myMap.Store(1, "value b")
+	ok1 := myMap.DeleteIf(20, func(value string) bool {
+		t.Fatal("condition function should not have been called")
+		return false
+	})
+	if ok1 {
+		t.Fatal("ok1 should be false")
+	}
+
+	ok2 := myMap.DeleteIf(1, func(value string) bool {
+		if value != "value b" {
+			t.Fatal("condition function arg should be tests")
+		}
+		return false // don't delete
+	})
+	if ok2 {
+		t.Fatal("ok1 should be false")
+	}
+
+	ok3 := myMap.DeleteIf(1, func(value string) bool {
+		if value != "value b" {
+			t.Fatal("condition function arg should be tests")
+		}
+		return true // delete the entry
+	})
+	if !ok3 {
+		t.Fatal("ok2 should be true")
+	}
+}
+
 func TestCount(t *testing.T) {
 	myMap := csmap.Create[int, string]()
 	myMap.SetIfAbsent(1, "test")
