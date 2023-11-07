@@ -79,6 +79,18 @@ func (m *CsMap[K, V]) Delete(key K) bool {
 	return shard.items.DeleteWithHash(key, hashShardPair.hash)
 }
 
+func (m *CsMap[K, V]) DeleteIf(key K, condition func(value V) bool) bool {
+	hashShardPair := m.getShard(key)
+	shard := hashShardPair.shard
+	shard.Lock()
+	defer shard.Unlock()
+	value, ok := shard.items.GetWithHash(key, hashShardPair.hash)
+	if ok && condition(value) {
+		return shard.items.DeleteWithHash(key, hashShardPair.hash)
+	}
+	return false
+}
+
 func (m *CsMap[K, V]) Load(key K) (V, bool) {
 	hashShardPair := m.getShard(key)
 	shard := hashShardPair.shard
@@ -123,6 +135,18 @@ func (m *CsMap[K, V]) SetIfAbsent(key K, value V) {
 	defer shard.Unlock()
 	_, ok := shard.items.GetWithHash(key, hashShardPair.hash)
 	if !ok {
+		shard.items.PutWithHash(key, value, hashShardPair.hash)
+	}
+}
+
+func (m *CsMap[K, V]) SetIf(key K, conditionFn func(previousVale V, previousFound bool) (value V, set bool)) {
+	hashShardPair := m.getShard(key)
+	shard := hashShardPair.shard
+	shard.Lock()
+	defer shard.Unlock()
+	value, found := shard.items.GetWithHash(key, hashShardPair.hash)
+	value, ok := conditionFn(value, found)
+	if ok {
 		shard.items.PutWithHash(key, value, hashShardPair.hash)
 	}
 }
