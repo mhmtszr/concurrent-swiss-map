@@ -15,8 +15,6 @@
 package swiss
 
 import (
-	"math/rand"
-
 	"github.com/mhmtszr/concurrent-swiss-map/maphash"
 )
 
@@ -33,7 +31,6 @@ type Map[K comparable, V any] struct {
 	resident uint32
 	dead     uint32
 	limit    uint32
-	sz       uint32
 }
 
 // metadata is the h2 metadata array for a group.
@@ -68,39 +65,11 @@ func NewMap[K comparable, V any](sz uint32) (m *Map[K, V]) {
 		groups: make([]group[K, V], groups),
 		hash:   maphash.NewHasher[K](),
 		limit:  groups * maxAvgGroupLoad,
-		sz:     groups,
 	}
 	for i := range m.ctrl {
 		m.ctrl[i] = newEmptyMetadata()
 	}
 	return
-}
-
-// Has returns true if |key| is present in |m|.
-func (m *Map[K, V]) Has(key K) (ok bool) {
-	hi, lo := splitHash(m.hash.Hash(key))
-	g := probeStart(hi, len(m.groups))
-	for { // inlined find loop
-		matches := metaMatchH2(&m.ctrl[g], lo)
-		for matches != 0 {
-			s := nextMatch(&matches)
-			if key == m.groups[g].keys[s] {
-				ok = true
-				return
-			}
-		}
-		// |key| is not in group |g|,
-		// stop probing if we see an empty slot
-		matches = metaMatchEmpty(&m.ctrl[g])
-		if matches != 0 {
-			ok = false
-			return
-		}
-		g++ // linear probing
-		if g >= uint32(len(m.groups)) {
-			g = 0
-		}
-	}
 }
 
 func (m *Map[K, V]) HasWithHash(key K, hash uint64) (ok bool) {
@@ -112,33 +81,6 @@ func (m *Map[K, V]) HasWithHash(key K, hash uint64) (ok bool) {
 			s := nextMatch(&matches)
 			if key == m.groups[g].keys[s] {
 				ok = true
-				return
-			}
-		}
-		// |key| is not in group |g|,
-		// stop probing if we see an empty slot
-		matches = metaMatchEmpty(&m.ctrl[g])
-		if matches != 0 {
-			ok = false
-			return
-		}
-		g++ // linear probing
-		if g >= uint32(len(m.groups)) {
-			g = 0
-		}
-	}
-}
-
-// Get returns the |value| mapped by |key| if one exists.
-func (m *Map[K, V]) Get(key K) (value V, ok bool) {
-	hi, lo := splitHash(m.hash.Hash(key))
-	g := probeStart(hi, len(m.groups))
-	for { // inlined find loop
-		matches := metaMatchH2(&m.ctrl[g], lo)
-		for matches != 0 {
-			s := nextMatch(&matches)
-			if key == m.groups[g].keys[s] {
-				value, ok = m.groups[g].values[s], true
 				return
 			}
 		}
@@ -252,47 +194,6 @@ func (m *Map[K, V]) PutWithHash(key K, value V, hash uint64) {
 	}
 }
 
-// Delete attempts to remove |key|, returns true successful.
-func (m *Map[K, V]) Delete(key K) (ok bool) {
-	hi, lo := splitHash(m.hash.Hash(key))
-	g := probeStart(hi, len(m.groups))
-	for {
-		matches := metaMatchH2(&m.ctrl[g], lo)
-		for matches != 0 {
-			s := nextMatch(&matches)
-			if key == m.groups[g].keys[s] {
-				ok = true
-				// optimization: if |m.ctrl[g]| contains any empty
-				// metadata bytes, we can physically delete |key|
-				// rather than placing a tombstone.
-				// The observation is that any probes into group |g|
-				// would already be terminated by the existing empty
-				// slot, and therefore reclaiming slot |s| will not
-				// cause premature termination of probes into |g|.
-				if metaMatchEmpty(&m.ctrl[g]) != 0 {
-					m.ctrl[g][s] = empty
-					m.resident--
-				} else {
-					m.ctrl[g][s] = tombstone
-					m.dead++
-				}
-				return
-			}
-		}
-		// |key| is not in group |g|,
-		// stop probing if we see an empty slot
-		matches = metaMatchEmpty(&m.ctrl[g])
-		if matches != 0 { // |key| absent
-			ok = false
-			return
-		}
-		g++ // linear probing
-		if g >= uint32(len(m.groups)) {
-			g = 0
-		}
-	}
-}
-
 func (m *Map[K, V]) DeleteWithHash(key K, hash uint64) (ok bool) {
 	hi, lo := splitHash(hash)
 	g := probeStart(hi, len(m.groups))
@@ -316,6 +217,10 @@ func (m *Map[K, V]) DeleteWithHash(key K, hash uint64) (ok bool) {
 					m.ctrl[g][s] = tombstone
 					m.dead++
 				}
+				var k K
+				var v V
+				m.groups[g].keys[s] = k
+				m.groups[g].values[s] = v
 				return
 			}
 		}
@@ -335,12 +240,19 @@ func (m *Map[K, V]) DeleteWithHash(key K, hash uint64) (ok bool) {
 
 // Clear removes all elements from the Map.
 func (m *Map[K, V]) Clear() {
-	m.ctrl = make([]metadata, m.sz)
-	m.groups = make([]group[K, V], m.sz)
-	m.limit = m.sz * maxAvgGroupLoad
-
-	for i := range m.ctrl {
-		m.ctrl[i] = newEmptyMetadata()
+	for i, c := range m.ctrl {
+		for j := range c {
+			m.ctrl[i][j] = empty
+		}
+	}
+	var k K
+	var v V
+	for i := range m.groups {
+		g := &m.groups[i]
+		for i := range g.keys {
+			g.keys[i] = k
+			g.values[i] = v
+		}
 	}
 	m.resident, m.dead = 0, 0
 }
@@ -357,7 +269,7 @@ func (m *Map[K, V]) Iter(cb func(k K, v V) (stop bool)) bool {
 	// we rehash during iteration
 	ctrl, groups := m.ctrl, m.groups
 	// pick a random starting group
-	g := rand.Intn(len(groups))
+	g := randIntN(len(groups))
 	for n := 0; n < len(groups); n++ {
 		for s, c := range ctrl[g] {
 			if c == empty || c == tombstone {
@@ -369,7 +281,7 @@ func (m *Map[K, V]) Iter(cb func(k K, v V) (stop bool)) bool {
 			}
 		}
 		g++
-		if g >= len(groups) {
+		if g >= uint32(len(groups)) {
 			g = 0
 		}
 	}
@@ -379,32 +291,6 @@ func (m *Map[K, V]) Iter(cb func(k K, v V) (stop bool)) bool {
 // Count returns the number of elements in the Map.
 func (m *Map[K, V]) Count() int {
 	return int(m.resident - m.dead)
-}
-
-// find returns the location of |key| if present, or its insertion location if absent.
-// for performance, find is manually inlined into public methods.
-func (m *Map[K, V]) find(key K, hi h1, lo h2) (g, s uint32, ok bool) {
-	g = probeStart(hi, len(m.groups))
-	for {
-		matches := metaMatchH2(&m.ctrl[g], lo)
-		for matches != 0 {
-			s = nextMatch(&matches)
-			if key == m.groups[g].keys[s] {
-				return g, s, true
-			}
-		}
-		// |key| is not in group |g|,
-		// stop probing if we see an empty slot
-		matches = metaMatchEmpty(&m.ctrl[g])
-		if matches != 0 {
-			s = nextMatch(&matches)
-			return g, s, false
-		}
-		g++ // linear probing
-		if g >= uint32(len(m.groups)) {
-			g = 0
-		}
-	}
 }
 
 func (m *Map[K, V]) nextSize() (n uint32) {
@@ -422,6 +308,7 @@ func (m *Map[K, V]) rehash(n uint32) {
 	for i := range m.ctrl {
 		m.ctrl[i] = newEmptyMetadata()
 	}
+	m.hash = maphash.NewSeed(m.hash)
 	m.limit = n * maxAvgGroupLoad
 	m.resident, m.dead = 0, 0
 	for g := range ctrl {
@@ -433,11 +320,6 @@ func (m *Map[K, V]) rehash(n uint32) {
 			m.Put(groups[g].keys[s], groups[g].values[s])
 		}
 	}
-}
-
-func (m *Map[K, V]) loadFactor() float32 {
-	slots := float32(len(m.groups) * groupSize)
-	return float32(m.resident-m.dead) / slots
 }
 
 // numGroups returns the minimum number of groups needed to store |n| elems.
@@ -467,4 +349,9 @@ func probeStart(hi h1, groups int) uint32 {
 // lemire.me/blog/2016/06/27/a-fast-alternative-to-the-modulo-reduction/
 func fastModN(x, n uint32) uint32 {
 	return uint32((uint64(x) * uint64(n)) >> 32)
+}
+
+// randIntN returns a random number in the interval [0, n).
+func randIntN(n int) uint32 {
+	return fastModN(fastrand(), uint32(n))
 }
