@@ -1,8 +1,9 @@
 package csmap
 
 import (
-	"github.com/mhmtszr/concurrent-swiss-map/maphash"
 	"sync"
+
+	"github.com/mhmtszr/concurrent-swiss-map/maphash"
 
 	"github.com/mhmtszr/concurrent-swiss-map/swiss"
 )
