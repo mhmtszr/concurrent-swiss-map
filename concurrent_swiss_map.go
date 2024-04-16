@@ -1,6 +1,7 @@
 package csmap
 
 import (
+	"context"
 	"sync"
 
 	"github.com/mhmtszr/concurrent-swiss-map/maphash"
@@ -166,18 +167,62 @@ func (m *CsMap[K, V]) IsEmpty() bool {
 	return m.Count() == 0
 }
 
+type Tuple[K comparable, V any] struct {
+	Key K
+	Val V
+}
+
 // Range If the callback function returns true iteration will stop.
 func (m *CsMap[K, V]) Range(f func(key K, value V) (stop bool)) {
+	ch := make(chan Tuple[K, V], m.Count())
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	listenCompleted := m.listen(f, ch)
+	m.produce(ctx, ch)
+	listenCompleted.Wait()
+}
+
+func (m *CsMap[K, V]) produce(ctx context.Context, ch chan Tuple[K, V]) {
+	var wg sync.WaitGroup
+	wg.Add(len(m.shards))
 	for i := range m.shards {
-		shard := m.shards[i]
-		shard.RLock()
-		stop := shard.items.Iter(f)
-		if stop {
+		go func(i int) {
+			defer wg.Done()
+
+			shard := m.shards[i]
+			shard.RLock()
+			shard.items.Iter(func(k K, v V) (stop bool) {
+				select {
+				case <-ctx.Done():
+					return true
+				default:
+					ch <- Tuple[K, V]{Key: k, Val: v}
+				}
+				return false
+			})
 			shard.RUnlock()
-			return
-		}
-		shard.RUnlock()
+		}(i)
 	}
+	go func() {
+		wg.Wait()
+		close(ch)
+	}()
+}
+
+func (m *CsMap[K, V]) listen(f func(key K, value V) (stop bool), ch chan Tuple[K, V]) *sync.WaitGroup {
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for t := range ch {
+			if stop := f(t.Key, t.Val); stop {
+				return
+			}
+		}
+	}()
+	return &wg
 }
 
 type HashShardPair[K comparable, V any] struct {

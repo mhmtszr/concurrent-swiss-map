@@ -195,6 +195,28 @@ func TestCustomHasherWithRange(t *testing.T) {
 	}
 }
 
+func TestDeleteFromRange(t *testing.T) {
+	myMap := csmap.Create[string, int](
+		csmap.WithSize[string, int](1024),
+	)
+
+	myMap.Store("aaa", 10)
+	myMap.Store("aab", 11)
+	myMap.Store("aac", 15)
+	myMap.Store("aad", 124)
+	myMap.Store("aaf", 987)
+
+	myMap.Range(func(key string, value int) (stop bool) {
+		if value > 20 {
+			myMap.Delete(key)
+		}
+		return false
+	})
+	if myMap.Count() != 3 {
+		t.Fatal("total should be 3, because currently range deletes values that bigger than 20.")
+	}
+}
+
 func TestBasicConcurrentWriteDeleteCount(t *testing.T) {
 	myMap := csmap.Create[int, string](
 		csmap.WithShardCount[int, string](32),
