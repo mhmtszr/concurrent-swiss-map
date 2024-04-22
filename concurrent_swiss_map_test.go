@@ -217,6 +217,27 @@ func TestDeleteFromRange(t *testing.T) {
 	}
 }
 
+func TestMarshal(t *testing.T) {
+	myMap := csmap.Create[string, int](
+		csmap.WithSize[string, int](1024),
+	)
+
+	myMap.Store("aaa", 10)
+	myMap.Store("aab", 11)
+
+	b, _ := myMap.MarshalJSON()
+
+	newMap := csmap.Create[string, int](
+		csmap.WithSize[string, int](1024),
+	)
+
+	_ = newMap.UnmarshalJSON(b)
+
+	if myMap.Count() != 2 || !myMap.Has("aaa") || !myMap.Has("aab") {
+		t.Fatal("count should be 2 after unmarshal")
+	}
+}
+
 func TestBasicConcurrentWriteDeleteCount(t *testing.T) {
 	myMap := csmap.Create[int, string](
 		csmap.WithShardCount[int, string](32),
