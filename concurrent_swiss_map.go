@@ -2,6 +2,7 @@ package csmap
 
 import (
 	"context"
+	"encoding/json"
 	"sync"
 
 	"github.com/mhmtszr/concurrent-swiss-map/maphash"
@@ -182,6 +183,28 @@ func (m *CsMap[K, V]) Range(f func(key K, value V) (stop bool)) {
 	listenCompleted := m.listen(f, ch)
 	m.produce(ctx, ch)
 	listenCompleted.Wait()
+}
+
+func (m *CsMap[K, V]) MarshalJSON() ([]byte, error) {
+	tmp := make(map[K]V, m.Count())
+	m.Range(func(key K, value V) (stop bool) {
+		tmp[key] = value
+		return false
+	})
+	return json.Marshal(tmp)
+}
+
+func (m *CsMap[K, V]) UnmarshalJSON(b []byte) error {
+	tmp := make(map[K]V, m.Count())
+
+	if err := json.Unmarshal(b, &tmp); err != nil {
+		return err
+	}
+
+	for key, val := range tmp {
+		m.Store(key, val)
+	}
+	return nil
 }
 
 func (m *CsMap[K, V]) produce(ctx context.Context, ch chan Tuple[K, V]) {
