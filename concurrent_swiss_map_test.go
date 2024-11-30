@@ -175,6 +175,42 @@ func TestRange(t *testing.T) {
 	}
 }
 
+func TestStoreWithCompute(t *testing.T) {
+	var (
+		value1 = "one"
+		value2 = "two"
+		double = func(v string) string {
+			return v + v
+		}
+		triple = func(v string) string {
+			return v + v + v
+		}
+	)
+
+	myMap := csmap.Create[int, string]()
+	myMap.Store(1, value1)
+	myMap.Store(2, value2)
+
+	myMap.StoreWithCompute(1, double)
+	myMap.StoreWithCompute(2, triple)
+
+	if myMap.Count() != 2 {
+		t.Fatal("count should be 2")
+	}
+
+	if !myMap.Has(1) {
+		t.Fatal("1 should be exist")
+	}
+
+	if v, ok := myMap.Load(1); !ok || v != value1+value1 {
+		t.Fatal("value should be ", value1+value1)
+	}
+
+	if v, ok := myMap.Load(2); !ok || v != value2+value2+value2 {
+		t.Fatal("value should be ", value2+value2+value2)
+	}
+}
+
 func TestCustomHasherWithRange(t *testing.T) {
 	myMap := csmap.Create[int, string](
 		csmap.WithCustomHasher[int, string](func(key int) uint64 {

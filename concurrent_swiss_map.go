@@ -73,6 +73,15 @@ func (m *CsMap[K, V]) Store(key K, value V) {
 	shard.Unlock()
 }
 
+func (m *CsMap[K, V]) StoreWithCompute(key K, compute func(value V) V) {
+	hashShardPair := m.getShard(key)
+	shard := hashShardPair.shard
+	shard.Lock()
+	defer shard.Unlock()
+	value, _ := shard.items.GetWithHash(key, hashShardPair.hash)
+	shard.items.PutWithHash(key, compute(value), hashShardPair.hash)
+}
+
 func (m *CsMap[K, V]) Delete(key K) bool {
 	hashShardPair := m.getShard(key)
 	shard := hashShardPair.shard
