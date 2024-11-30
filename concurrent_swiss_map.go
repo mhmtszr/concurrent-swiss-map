@@ -73,6 +73,9 @@ func (m *CsMap[K, V]) Store(key K, value V) {
 	shard.Unlock()
 }
 
+// StoreWithCompute stores the value of the current key using the result of the
+// compute function. If the key doesn't exist, it is stored with default value
+// of the V's type.
 func (m *CsMap[K, V]) StoreWithCompute(key K, compute func(value V) V) {
 	hashShardPair := m.getShard(key)
 	shard := hashShardPair.shard
