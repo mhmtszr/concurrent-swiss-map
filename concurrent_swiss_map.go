@@ -17,6 +17,11 @@ type CsMap[K comparable, V any] struct {
 	size       uint64
 }
 
+type HashShardPair[K comparable, V any] struct {
+	shard shard[K, V]
+	hash  uint64
+}
+
 type shard[K comparable, V any] struct {
 	items *swiss.Map[K, V]
 	*sync.RWMutex
@@ -246,9 +251,4 @@ func (m *CsMap[K, V]) listen(f func(key K, value V) (stop bool), ch chan Tuple[K
 		}
 	}()
 	return &wg
-}
-
-type HashShardPair[K comparable, V any] struct {
-	shard shard[K, V]
-	hash  uint64
 }
