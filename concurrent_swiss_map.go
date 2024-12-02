@@ -27,6 +27,30 @@ type shard[K comparable, V any] struct {
 	*sync.RWMutex
 }
 
+// OptFunc is a type that is used in New function for passing options.
+type OptFunc[K comparable, V any] func(o *CsMap[K, V])
+
+// New function creates *CsMap[K, V].
+func New[K comparable, V any](options ...OptFunc[K, V]) *CsMap[K, V] {
+	m := CsMap[K, V]{
+		hasher:     maphash.NewHasher[K]().Hash,
+		shardCount: 32,
+	}
+	for _, option := range options {
+		option(&m)
+	}
+
+	m.shards = make([]shard[K, V], m.shardCount)
+
+	for i := 0; i < int(m.shardCount); i++ {
+		m.shards[i] = shard[K, V]{items: swiss.NewMap[K, V](uint32((m.size / m.shardCount) + 1)), RWMutex: &sync.RWMutex{}}
+	}
+	return &m
+}
+
+// Create creates *CsMap.
+//
+// Deprecated: New function should be used instead.
 func Create[K comparable, V any](options ...func(options *CsMap[K, V])) *CsMap[K, V] {
 	m := CsMap[K, V]{
 		hasher:     maphash.NewHasher[K]().Hash,
