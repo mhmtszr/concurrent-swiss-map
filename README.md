@@ -26,7 +26,7 @@ import (
 )
 
 func main() {
-	myMap := csmap.Create[string, int](
+	myMap := csmap.New[string, int](
 		// set the number of map shards. the default value is 32.
 		csmap.WithShardCount[string, int](32),
 
