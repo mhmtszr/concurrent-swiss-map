@@ -9,7 +9,7 @@ import (
 )
 
 func TestHas(t *testing.T) {
-	myMap := csmap.Create[int, string]()
+	myMap := csmap.New[int, string]()
 	myMap.Store(1, "test")
 	if !myMap.Has(1) {
 		t.Fatal("1 should exists")
@@ -17,7 +17,7 @@ func TestHas(t *testing.T) {
 }
 
 func TestLoad(t *testing.T) {
-	myMap := csmap.Create[int, string]()
+	myMap := csmap.New[int, string]()
 	myMap.Store(1, "test")
 	v, ok := myMap.Load(1)
 	v2, ok2 := myMap.Load(2)
@@ -30,7 +30,7 @@ func TestLoad(t *testing.T) {
 }
 
 func TestDelete(t *testing.T) {
-	myMap := csmap.Create[int, string]()
+	myMap := csmap.New[int, string]()
 	myMap.Store(1, "test")
 	ok1 := myMap.Delete(20)
 	ok2 := myMap.Delete(1)
@@ -46,7 +46,7 @@ func TestDelete(t *testing.T) {
 }
 
 func TestSetIfAbsent(t *testing.T) {
-	myMap := csmap.Create[int, string]()
+	myMap := csmap.New[int, string]()
 	myMap.SetIfAbsent(1, "test")
 	if !myMap.Has(1) {
 		t.Fatal("1 should be exist")
@@ -54,7 +54,7 @@ func TestSetIfAbsent(t *testing.T) {
 }
 
 func TestSetIfPresent(t *testing.T) {
-	myMap := csmap.Create[int, string]()
+	myMap := csmap.New[int, string]()
 	myMap.SetIfPresent(1, "test")
 	if myMap.Has(1) {
 		t.Fatal("1 should be not exist")
@@ -69,7 +69,7 @@ func TestSetIfPresent(t *testing.T) {
 }
 
 func TestSetIf(t *testing.T) {
-	myMap := csmap.Create[int, string]()
+	myMap := csmap.New[int, string]()
 	valueA := "value a"
 	myMap.SetIf(1, func(previousVale string, previousFound bool) (value string, set bool) {
 		// operate like  a SetIfAbsent...
@@ -97,7 +97,7 @@ func TestSetIf(t *testing.T) {
 }
 
 func TestDeleteIf(t *testing.T) {
-	myMap := csmap.Create[int, string]()
+	myMap := csmap.New[int, string]()
 	myMap.Store(1, "value b")
 	ok1 := myMap.DeleteIf(20, func(value string) bool {
 		t.Fatal("condition function should not have been called")
@@ -129,7 +129,7 @@ func TestDeleteIf(t *testing.T) {
 }
 
 func TestCount(t *testing.T) {
-	myMap := csmap.Create[int, string]()
+	myMap := csmap.New[int, string]()
 	myMap.SetIfAbsent(1, "test")
 	myMap.SetIfAbsent(2, "test2")
 	if myMap.Count() != 2 {
@@ -138,14 +138,14 @@ func TestCount(t *testing.T) {
 }
 
 func TestIsEmpty(t *testing.T) {
-	myMap := csmap.Create[int, string]()
+	myMap := csmap.New[int, string]()
 	if !myMap.IsEmpty() {
 		t.Fatal("map should be empty")
 	}
 }
 
 func TestRangeStop(t *testing.T) {
-	myMap := csmap.Create[int, string](
+	myMap := csmap.New[int, string](
 		csmap.WithShardCount[int, string](1),
 	)
 	myMap.SetIfAbsent(1, "test")
@@ -162,7 +162,7 @@ func TestRangeStop(t *testing.T) {
 }
 
 func TestRange(t *testing.T) {
-	myMap := csmap.Create[int, string]()
+	myMap := csmap.New[int, string]()
 	myMap.SetIfAbsent(1, "test")
 	myMap.SetIfAbsent(2, "test2")
 	total := 0
@@ -176,7 +176,7 @@ func TestRange(t *testing.T) {
 }
 
 func TestCustomHasherWithRange(t *testing.T) {
-	myMap := csmap.Create[int, string](
+	myMap := csmap.New[int, string](
 		csmap.WithCustomHasher[int, string](func(key int) uint64 {
 			return 0
 		}),
@@ -196,7 +196,7 @@ func TestCustomHasherWithRange(t *testing.T) {
 }
 
 func TestDeleteFromRange(t *testing.T) {
-	myMap := csmap.Create[string, int](
+	myMap := csmap.New[string, int](
 		csmap.WithSize[string, int](1024),
 	)
 
@@ -218,7 +218,7 @@ func TestDeleteFromRange(t *testing.T) {
 }
 
 func TestMarshal(t *testing.T) {
-	myMap := csmap.Create[string, int](
+	myMap := csmap.New[string, int](
 		csmap.WithSize[string, int](1024),
 	)
 
@@ -227,7 +227,7 @@ func TestMarshal(t *testing.T) {
 
 	b, _ := myMap.MarshalJSON()
 
-	newMap := csmap.Create[string, int](
+	newMap := csmap.New[string, int](
 		csmap.WithSize[string, int](1024),
 	)
 
@@ -239,7 +239,7 @@ func TestMarshal(t *testing.T) {
 }
 
 func TestBasicConcurrentWriteDeleteCount(t *testing.T) {
-	myMap := csmap.Create[int, string](
+	myMap := csmap.New[int, string](
 		csmap.WithShardCount[int, string](32),
 		csmap.WithSize[int, string](1000),
 	)
@@ -295,7 +295,7 @@ func TestBasicConcurrentWriteDeleteCount(t *testing.T) {
 }
 
 func TestClear(t *testing.T) {
-	myMap := csmap.Create[int, string]()
+	myMap := csmap.New[int, string]()
 	loop := 10000
 	for i := 0; i < loop; i++ {
 		myMap.Store(i, "test")
