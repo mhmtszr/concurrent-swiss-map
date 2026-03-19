@@ -70,6 +70,9 @@ func Create[K comparable, V any](options ...func(options *CsMap[K, V])) *CsMap[K
 
 func WithShardCount[K comparable, V any](count uint64) func(csMap *CsMap[K, V]) {
 	return func(csMap *CsMap[K, V]) {
+		if count == 0 {
+			count = 1
+		}
 		csMap.shardCount = count
 	}
 }
@@ -245,16 +248,20 @@ func (m *CsMap[K, V]) produce(ctx context.Context, ch chan Tuple[K, V]) {
 
 			shard := m.shards[i]
 			shard.RLock()
+			items := make([]Tuple[K, V], 0, shard.items.Count())
 			shard.items.Iter(func(k K, v V) (stop bool) {
-				select {
-				case <-ctx.Done():
-					return true
-				default:
-					ch <- Tuple[K, V]{Key: k, Val: v}
-				}
+				items = append(items, Tuple[K, V]{Key: k, Val: v})
 				return false
 			})
 			shard.RUnlock()
+
+			for _, item := range items {
+				select {
+				case <-ctx.Done():
+					return
+				case ch <- item:
+				}
+			}
 		}(i)
 	}
 	go func() {
